@@ -13,6 +13,8 @@ import com.lazaro.course.repositories.UserRepository;
 import com.lazaro.course.resources.exceptions.DatabaseException;
 import com.lazaro.course.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class UserService {
 	@Autowired
@@ -42,12 +44,15 @@ public class UserService {
 	}
 	
 	public User update(Long id, User user) {
-		User entity = repository.getReferenceById(id);
-		//getReferenceById prepares the monitoried object for adjustments and AFTER THAT executes database operation
-		// this way is eficientest
-		updateData(entity, user);
-		
-		return repository.save(entity);
+		try {
+			User entity = repository.getReferenceById(id);
+			//getReferenceById prepares the monitoried object for adjustments and AFTER THAT executes database operation
+			// this way is eficientest
+			updateData(entity, user);
+			return repository.save(entity);
+		} catch(EntityNotFoundException e) {
+			throw new ResourceNotFoundException(id);
+		}
 	}
 
 	private void updateData(User entity, User user) {
